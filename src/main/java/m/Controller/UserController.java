@@ -5,6 +5,7 @@ import m.Model.Entity.Users;
 import m.Model.ServiceImp.UserServiceImp;
 import m.PayLoad.Request.ForgotPassWordRequest;
 import m.PayLoad.Request.LoginRequest;
+import m.PayLoad.Request.ResetPasswordRequest;
 import m.PayLoad.Request.SignupRequest;
 import m.PayLoad.Response.JwtResponse;
 import m.PayLoad.Response.MessageResponse;
@@ -19,6 +20,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.Base64;
 
 @CrossOrigin(origins = "*")
 @RestController
@@ -54,10 +56,11 @@ public class UserController {
         userServiceImp.saveAndUpdate(user);
         return ResponseEntity.ok(new MessageResponse("User registered successfully"));
     }
+
     @PostMapping("/signin")
-    public ResponseEntity<?> loginUser(@RequestBody LoginRequest loginRequest){
+    public ResponseEntity<?> loginUser(@RequestBody LoginRequest loginRequest) {
         Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(loginRequest.getUsersName(),loginRequest.getUsersPassWord())
+                new UsernamePasswordAuthenticationToken(loginRequest.getUsersName(), loginRequest.getUsersPassWord())
         );
         SecurityContextHolder.getContext().setAuthentication(authentication);
         CustomUserDetails customUserDetail = (CustomUserDetails) authentication.getPrincipal();
@@ -65,11 +68,12 @@ public class UserController {
         String jwt = jwtTokenProvider.generateToken(customUserDetail);
 
 
-        return ResponseEntity.ok(new JwtResponse(jwt,customUserDetail.getUsername(),customUserDetail.getUserEmail(),
-                customUserDetail.getUserPhone(),customUserDetail.getPermission()));
+        return ResponseEntity.ok(new JwtResponse(jwt, customUserDetail.getUsername(), customUserDetail.getUserEmail(),
+                customUserDetail.getUserPhone(), customUserDetail.getPermission()));
     }
+
     @GetMapping("/logOut")
-    public ResponseEntity<?> logOut(HttpServletRequest request){
+    public ResponseEntity<?> logOut(HttpServletRequest request) {
         String authorizationHeader = request.getHeader("Authorization");
 
         // Clear the authentication from server-side (in this case, Spring Security)
@@ -77,16 +81,36 @@ public class UserController {
 
         return ResponseEntity.ok("You have been logged out.");
     }
-    @PostMapping("/forgotPassword/{usersName}")
-    public ResponseEntity<?> forgotPassword(@RequestBody ForgotPassWordRequest forgotPassWordRequest,@PathVariable("usersName") String usersName ){
-         Users users=userServiceImp.findByUsersName(usersName);
-         if (users!=null){
-             users.setUsersPassWord(passwordEncoder.encode(forgotPassWordRequest.getNewUsersPassWord()));
-             userServiceImp.saveAndUpdate(users);
-         }else {
-             return ResponseEntity.ok("Account does not exist!");
-         }
-             return ResponseEntity.ok("Change password successfully!");
 
+//    @PostMapping("/forgotPassword")
+//    public ResponseEntity<?> forgotPassword(@RequestBody ForgotPassWordRequest forgotPassWordRequest) {
+//        Users users = userServiceImp.findByUsersName(forgotPassWordRequest.getUsersName());
+//        if (users != null) {
+//            users.setUsersPassWord(passwordEncoder.encode(forgotPassWordRequest.getNewUsersPassWord()));
+//            userServiceImp.saveAndUpdate(users);
+//        } else {
+//            return ResponseEntity.ok("Account does not exist!");
+//        }
+//        return ResponseEntity.ok("Change password successfully!");
+//
+//    }
+
+    @PostMapping("resetPassWord")
+    public ResponseEntity<?> resetPassword(@RequestBody ResetPasswordRequest resetPasswordRequest) {
+        CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        boolean check = passwordEncoder.matches(resetPasswordRequest.getUsersPassWord(), userDetails.getPassword());
+
+        if (check) {
+            if (resetPasswordRequest.getNewUsersPassWord().equals(resetPasswordRequest.getConfirmPassWord())) {
+                Users users=userServiceImp.findById(userDetails.getUsersId());
+                users.setUsersPassWord(passwordEncoder.encode(resetPasswordRequest.getNewUsersPassWord()));
+               userServiceImp.saveAndUpdate(users);
+                return ResponseEntity.ok(new MessageResponse("Reset password successfully"));
+            } else {
+                return ResponseEntity.badRequest().body(new MessageResponse("Mật khẩu mới không trùng khớp, vui lòng thử lại!"));
+            }
+        } else {
+            return ResponseEntity.badRequest().body(new MessageResponse("Mật khẩu không trùng khớp, vui lòng thử lại!"));
+        }
     }
 }
