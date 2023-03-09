@@ -9,7 +9,7 @@ public class SignupRequest {
 
     private String userEmail;
 
-    private int userPhone;
+    private String userPhone;
 
     private String userCompany;
 
@@ -21,7 +21,7 @@ public class SignupRequest {
 
     private boolean userStatus;
 
-    public SignupRequest(String usersName, String usersPassWord, String userEmail, int userPhone, String userCompany, String billingAddress, String shippingAdress, int permission, boolean userStatus) {
+    public SignupRequest(String usersName, String usersPassWord, String userEmail, String userPhone, String userCompany, String billingAddress, String shippingAdress, int permission, boolean userStatus) {
         this.usersName = usersName;
         this.usersPassWord = usersPassWord;
         this.userEmail = userEmail;
@@ -57,11 +57,11 @@ public class SignupRequest {
         this.userEmail = userEmail;
     }
 
-    public int getUserPhone() {
+    public String getUserPhone() {
         return userPhone;
     }
 
-    public void setUserPhone(int userPhone) {
+    public void setUserPhone(String userPhone) {
         this.userPhone = userPhone;
     }
 

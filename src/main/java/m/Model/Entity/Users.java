@@ -25,7 +25,7 @@ public class Users {
     @Column(name = "userEmail")
     private String userEmail;
     @Column(name = "userPhone")
-    private int userPhone;
+    private String userPhone;
     @Column(name = "userCompany")
     private String userCompany;
     @Column(name = "billingAddress")

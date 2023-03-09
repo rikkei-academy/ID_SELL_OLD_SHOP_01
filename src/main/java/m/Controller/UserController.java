@@ -1,6 +1,7 @@
 package m.Controller;
 
 import m.JWT.JwtTokenProvider;
+import m.Model.DTO.UserDTO;
 import m.Model.Entity.Users;
 import m.Model.ServiceImp.UserServiceImp;
 import m.PayLoad.Request.ForgotPassWordRequest;
@@ -20,11 +21,13 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
 import java.util.Base64;
+import java.util.List;
 
 @CrossOrigin(origins = "*")
 @RestController
-@RequestMapping("/api/m/auth/")
+@RequestMapping("/api/m/auth/userController")
 public class UserController {
     @Autowired
     private AuthenticationManager authenticationManager;
@@ -70,6 +73,32 @@ public class UserController {
 
         return ResponseEntity.ok(new JwtResponse(jwt, customUserDetail.getUsername(), customUserDetail.getUserEmail(),
                 customUserDetail.getUserPhone(), customUserDetail.getPermission()));
+    }
+
+    @GetMapping()
+    public List<UserDTO> getAllUser(){
+        List<Users> usersList=userServiceImp.getAll();
+        List<UserDTO> userDTOS=new ArrayList<>();
+        String permission="";
+        for (Users user:usersList) {
+            if (user.getPermission()==1){
+                permission="Quản trị";
+            }else {
+                permission="Người dùng";
+            }
+            UserDTO userDTO=new UserDTO(
+                    user.getUsersName(),
+                    user.getUserEmail(),
+                    user.getUserPhone(),
+                    user.getUserCompany(),
+                    user.getBillingAddress(),
+                    user.getShippingAdress(),
+                    permission,
+                    (user.isUserStatus()?"Hoạt Động":"Block")
+            );
+            userDTOS.add(userDTO);
+        }
+    return userDTOS;
     }
 
     @GetMapping("/logOut")
