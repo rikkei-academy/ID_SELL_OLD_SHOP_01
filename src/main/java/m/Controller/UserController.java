@@ -77,9 +77,9 @@ public class UserController {
 
         return ResponseEntity.ok("You have been logged out.");
     }
-    @PostMapping("/forgotPassword/{usersName}")
-    public ResponseEntity<?> forgotPassword(@RequestBody ForgotPassWordRequest forgotPassWordRequest,@PathVariable("usersName") String usersName ){
-         Users users=userServiceImp.findByUsersName(usersName);
+    @PostMapping("/forgotPassword")
+    public ResponseEntity<?> forgotPassword(@RequestBody ForgotPassWordRequest forgotPassWordRequest ){
+         Users users=userServiceImp.findByUsersName(forgotPassWordRequest.getUsersName());
          if (users!=null){
              users.setUsersPassWord(passwordEncoder.encode(forgotPassWordRequest.getNewUsersPassWord()));
              userServiceImp.saveAndUpdate(users);

@@ -7,10 +7,10 @@ public class JwtResponse {
     private String type="Bearer";
     private String usersName;
     private String userEmail;
-    private int userPhone;
+    private String userPhone;
     private int permission;
 
-    public JwtResponse(String token, String usersName, String userEmail, int userPhone, int permission) {
+    public JwtResponse(String token, String usersName, String userEmail, String userPhone, int permission) {
         this.token = token;
         this.usersName = usersName;
         this.userEmail = userEmail;
@@ -52,11 +52,11 @@ public class JwtResponse {
         this.userEmail = userEmail;
     }
 
-    public int getUserPhone() {
+    public String getUserPhone() {
         return userPhone;
     }
 
-    public void setUserPhone(int userPhone) {
+    public void setUserPhone(String userPhone) {
         this.userPhone = userPhone;
     }
 

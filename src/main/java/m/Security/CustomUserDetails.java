@@ -20,7 +20,7 @@ public class CustomUserDetails implements UserDetails {
 
     private String userEmail;
 
-    private int userPhone;
+    private String userPhone;
 
     private String userCompany;
 
