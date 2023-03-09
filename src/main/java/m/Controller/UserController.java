@@ -3,6 +3,7 @@ package m.Controller;
 import m.JWT.JwtTokenProvider;
 import m.Model.Entity.Users;
 import m.Model.ServiceImp.UserServiceImp;
+import m.PayLoad.Request.ForgotPassWordRequest;
 import m.PayLoad.Request.LoginRequest;
 import m.PayLoad.Request.SignupRequest;
 import m.PayLoad.Response.JwtResponse;
@@ -50,8 +51,6 @@ public class UserController {
         user.setShippingAdress(signupRequest.getShippingAdress());
         user.setPermission(signupRequest.getPermission());
         user.setUserStatus(true);
-
-
         userServiceImp.saveAndUpdate(user);
         return ResponseEntity.ok(new MessageResponse("User registered successfully"));
     }
@@ -77,5 +76,17 @@ public class UserController {
         SecurityContextHolder.clearContext();
 
         return ResponseEntity.ok("You have been logged out.");
+    }
+    @PostMapping("/forgotPassword/{usersName}")
+    public ResponseEntity<?> forgotPassword(@RequestBody ForgotPassWordRequest forgotPassWordRequest,@PathVariable("usersName") String usersName ){
+         Users users=userServiceImp.findByUsersName(usersName);
+         if (users!=null){
+             users.setUsersPassWord(passwordEncoder.encode(forgotPassWordRequest.getNewUsersPassWord()));
+             userServiceImp.saveAndUpdate(users);
+         }else {
+             return ResponseEntity.ok("Account does not exist!");
+         }
+             return ResponseEntity.ok("Change password successfully!");
+
     }
 }
