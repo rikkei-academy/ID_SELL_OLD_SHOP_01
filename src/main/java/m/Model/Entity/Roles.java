@@ -6,14 +6,14 @@ import lombok.Data;
 import javax.persistence.*;
 
 @Entity
-@Table(name = "Roles")
+@Table(name = "roles")
 @Data
 public class Roles {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "RoleId")
+    @Column(name = "rolesId")
     private int roleId;
-    @Column(name = "RoleName")
+    @Column(name = "rolesName")
     @Enumerated(EnumType.STRING)
     private ERole roleName;
 }
