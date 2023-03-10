@@ -4,6 +4,9 @@ import m.Model.Entity.Users;
 import m.Model.Responsitory.UserResponsitory;
 import m.Model.Service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -17,6 +20,11 @@ public class UserServiceImp implements UserService<Users,Integer> {
     @Override
     public Users findByUsersName(String usersName) {
         return userResponsitory.findByUsersName(usersName);
+    }
+
+    @Override
+    public Users findByEmail(String email) {
+        return userResponsitory.findByUserEmail(email);
     }
 
     @Override
@@ -43,5 +51,39 @@ public class UserServiceImp implements UserService<Users,Integer> {
     @Override
     public Users findById(Integer id) {
         return userResponsitory.findById(id).get();
+    }
+
+    @Override
+    public List<Users> findByUsersNameContaining(String usersName) {
+        return userResponsitory.findByUsersNameContaining(usersName);
+    }
+
+    @Override
+    public List<Users> findByUserEmailContaining(String email) {
+        return userResponsitory.findByUserEmailContaining(email);
+    }
+
+    @Override
+    public List<Users> findByShippingAdressContaining(String shipping) {
+        return userResponsitory.findByShippingAdressContaining(shipping);
+    }
+
+    @Override
+    public List<Users> findByUserCompanyContaining(String company) {
+        return userResponsitory.findByUserCompanyContaining(company);
+    }
+
+    @Override
+    public List<Users> sortUserByUserName(String diraction) {
+        if (diraction.equals("asc")) {
+            return userResponsitory.findAll(Sort.by("usersName").ascending());
+        } else {
+            return userResponsitory.findAll(Sort.by("usersName").descending());
+        }
+    }
+
+    @Override
+    public Page<Users> paggingUser(Pageable pageable) {
+        return userResponsitory.findAll(pageable);
     }
 }
