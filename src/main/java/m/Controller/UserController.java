@@ -3,6 +3,7 @@ package m.Controller;
 import m.JWT.JwtTokenProvider;
 import m.Model.DTO.UserDTO;
 import m.Model.Entity.Users;
+import m.Model.Service.UserService;
 import m.Model.ServiceImp.UserServiceImp;
 import m.PayLoad.Request.ForgotPassWordRequest;
 import m.PayLoad.Request.LoginRequest;
@@ -37,16 +38,16 @@ public class UserController {
     @Autowired
     private JwtTokenProvider jwtTokenProvider;
     @Autowired
-    private UserServiceImp userServiceImp;
+    private UserService userService;
     @Autowired
     private PasswordEncoder passwordEncoder;
 
     @PostMapping("/signup")
     public ResponseEntity<?> registerUser(@RequestBody SignupRequest signupRequest) {
-        if (userServiceImp.existsByUsersName(signupRequest.getUsersName())) {
+        if (userService.existsByUsersName(signupRequest.getUsersName())) {
             return ResponseEntity.badRequest().body(new MessageResponse("Error: Usermame is already"));
         }
-        if (userServiceImp.existsByUserEmail(signupRequest.getUserEmail())) {
+        if (userService.existsByUserEmail(signupRequest.getUserEmail())) {
             return ResponseEntity.badRequest().body(new MessageResponse("Error: Email is already"));
         }
         Users user = new Users();
@@ -59,13 +60,13 @@ public class UserController {
         user.setShippingAdress(signupRequest.getShippingAdress());
         user.setPermission(signupRequest.getPermission());
         user.setUserStatus(true);
-        userServiceImp.saveAndUpdate(user);
+        userService.saveAndUpdate(user);
         return ResponseEntity.ok(new MessageResponse("User registered successfully"));
     }
 
     @PostMapping("/signin")
     public ResponseEntity<?> loginUser(@RequestBody LoginRequest loginRequest) {
-        Users users=userServiceImp.findByUsersName(loginRequest.getUsersName());
+        Users users=userService.findByUsersName(loginRequest.getUsersName());
         if (users.isUserStatus()){
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(loginRequest.getUsersName(), loginRequest.getUsersPassWord())
@@ -87,7 +88,7 @@ public class UserController {
 
     @GetMapping()
     public List<UserDTO> getAllUser() {
-        List<Users> usersList = userServiceImp.getAll();
+        List<Users> usersList = userService.getAll();
         List<UserDTO> userDTOS = new ArrayList<>();
         String permission = "";
         for (Users user : usersList) {
@@ -129,9 +130,9 @@ public class UserController {
 
         if (check) {
             if (resetPasswordRequest.getNewUsersPassWord().equals(resetPasswordRequest.getConfirmPassWord())) {
-                Users users = userServiceImp.findById(userDetails.getUsersId());
+                Users users = userService.findByUsersName(userDetails.getUsersName());
                 users.setUsersPassWord(passwordEncoder.encode(resetPasswordRequest.getNewUsersPassWord()));
-                userServiceImp.saveAndUpdate(users);
+                userService.saveAndUpdate(users);
                 return ResponseEntity.ok(new MessageResponse("Reset password successfully"));
             } else {
                 return ResponseEntity.badRequest().body(new MessageResponse("Mật khẩu mới không trùng khớp, vui lòng thử lại!"));
@@ -143,34 +144,34 @@ public class UserController {
 
     @GetMapping("/SearchUserByName")
     public List<Users> searchUserByName(@RequestParam("usersName") String usersName) {
-        return userServiceImp.findByUsersNameContaining(usersName);
+        return userService.findByUsersNameContaining(usersName);
     }
 
     @GetMapping("/SearchUserByEmail")
     public List<Users> searchUserByEmail(@RequestParam("email") String email) {
-        return userServiceImp.findByUserEmailContaining(email);
+        return userService.findByUserEmailContaining(email);
     }
 
     @GetMapping("/SearchUserByShipping")
     public List<Users> searchUserByShipping(@RequestParam("shipping") String shipping) {
-        return userServiceImp.findByShippingAdressContaining(shipping);
+        return userService.findByShippingAdressContaining(shipping);
     }
 
     @GetMapping("/SearchUserByCompany")
     public List<Users> searchUserByCompany(@RequestParam("company") String company) {
-        return userServiceImp.findByUserCompanyContaining(company);
+        return userService.findByUserCompanyContaining(company);
     }
 
     @GetMapping("/sortUserByName")
     public List<Users> sortUserByName(@RequestParam("diraction") String diraction) {
-        return userServiceImp.sortUserByUserName(diraction);
+        return userService.sortUserByUserName(diraction);
     }
 
     @GetMapping("/paginationUserAsc")
     public ResponseEntity<Map<String, Object>> paggingUser(@RequestParam(defaultValue = "0") int page,
                                                            @RequestParam(defaultValue = "3") int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("usersName").ascending());
-        Page<Users> users = userServiceImp.paggingUser(pageable);
+        Page<Users> users = userService.paggingUser(pageable);
         Map<String, Object> data = new HashMap<>();
         data.put("Users", users.getContent());
         data.put("Size", users.getSize());
@@ -183,7 +184,7 @@ public class UserController {
     public ResponseEntity<Map<String, Object>> paggingUserDsec(@RequestParam(defaultValue = "0") int page,
                                                                @RequestParam(defaultValue = "3") int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("usersName").descending());
-        Page<Users> users = userServiceImp.paggingUser(pageable);
+        Page<Users> users = userService.paggingUser(pageable);
         Map<String, Object> data = new HashMap<>();
         data.put("Users", users.getContent());
         data.put("Size", users.getSize());
@@ -192,22 +193,46 @@ public class UserController {
         return new ResponseEntity<>(data, HttpStatus.OK);
     }
 
-    @GetMapping("/changeAccountPermissions")
+    @GetMapping("/changeAccess")
     public ResponseEntity<?> changeAccountPermissions(@RequestParam("usersName") String usersName) {
         CustomUserDetails usersChangePass = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if (usersChangePass!=null){
             if (usersChangePass.getPermission()==1){
-                Users users = userServiceImp.findByUsersName(usersName);
+                Users users = userService.findByUsersName(usersName);
                 users.setUserStatus(!users.isUserStatus());
-                userServiceImp.saveAndUpdate(users);
+                userService.saveAndUpdate(users);
                 return ResponseEntity.ok("Cập nhật quyền thành công!");
             }else {
                 return ResponseEntity.ok("Bạn không có quyền thực hiện thao tác này!");
             }
         }else {
-            return ResponseEntity.ok("Bạn cần thực hiện đăng nhập trước khi thực hiện thao tác này!!");
+            return ResponseEntity.ok("Bạn cần thực hiện đăng nhập trước khi thực hiện thao tác này!");
         }
     }
+
+   @GetMapping("/filter")
+    public ResponseEntity<?> filter(@RequestParam("filterBy")String filterName,@RequestParam("name")String name){
+        List<Users> listUser = userService.filter(filterName,name);
+       List<UserDTO> userDTOS = new ArrayList<>();
+
+       for (Users user : listUser) {
+
+           UserDTO userDTO = new UserDTO(
+                   user.getUsersName(),
+                   user.getUserEmail(),
+                   user.getUserPhone(),
+                   user.getUserCompany(),
+                   user.getBillingAddress(),
+                   user.getShippingAdress(),
+                   ((user.getPermission()==1)?"Quản trị":"Người dùng"),
+                   (user.isUserStatus() ? "Hoạt Động" : "Block")
+           );
+           userDTOS.add(userDTO);
+       }
+
+        return ResponseEntity.ok(userDTOS);
+   }
+
 
 
 }

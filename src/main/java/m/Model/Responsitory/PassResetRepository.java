@@ -14,4 +14,6 @@ public interface PassResetRepository extends JpaRepository<PasswordResetToken, I
             "           from PasswordResetToken\n" +
             "           where usersId = :uId)", nativeQuery = true)
     PasswordResetToken getLastTokenByUserId(@Param("uId")int uId);
+
+
 }
