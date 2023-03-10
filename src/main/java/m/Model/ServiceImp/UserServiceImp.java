@@ -9,6 +9,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -85,5 +86,19 @@ public class UserServiceImp implements UserService<Users,Integer> {
     @Override
     public Page<Users> paggingUser(Pageable pageable) {
         return userResponsitory.findAll(pageable);
+    }
+
+    @Override
+        public List<Users> filter(String filter,String name) {
+        List<Users> list = new ArrayList<>();
+            if (filter.equalsIgnoreCase("company")){
+                list = userResponsitory.findByUserCompany(name);
+            } else if (filter.equalsIgnoreCase("billAddress")) {
+                list = userResponsitory.findByBillingAddress(name);
+            }else {
+                list = userResponsitory.findByShippingAdress(name);
+            }
+
+        return list;
     }
 }

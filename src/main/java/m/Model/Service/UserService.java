@@ -23,4 +23,6 @@ public interface UserService<T,V> {
     List<Users> sortUserByUserName(String diraction);
     Page<Users> paggingUser(Pageable pageable);
 
+    List<Users> filter(String filter,String name);
+
 }

@@ -17,6 +17,12 @@ List<Users> findByUsersNameContaining(String usersName);
     List<Users> findByShippingAdressContaining(String shipping);
     List<Users> findByUserCompanyContaining(String company);
 
+    List<Users> findByUserCompany(String name);
+
+    List<Users> findByBillingAddress(String name);
+
+    List<Users> findByShippingAdress(String name);
+
 
 
 }
