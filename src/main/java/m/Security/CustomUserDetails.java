@@ -5,10 +5,15 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import m.Model.Entity.Users;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.Column;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Data
 @AllArgsConstructor
 public class CustomUserDetails implements UserDetails {
@@ -27,20 +32,19 @@ public class CustomUserDetails implements UserDetails {
     private String billingAddress;
 
     private String shippingAdress;
-
-    private int permission;
-
     private boolean userStatus;
-
-
-
+    private Collection<? extends GrantedAuthority> authorities;
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return null;
+        return this.authorities;
     }
-
-    public  static CustomUserDetails mapUserToUserDetails(Users users){
-     return new CustomUserDetails(
+    //Tu thong tin user chuyen sang thong tin CustomUserDetails
+    public static CustomUserDetails mapUserToUserDetail(Users users) {
+        //Lay cac quyen tu doi tuong user
+        List<GrantedAuthority> listAuthorities = users.getListRoles().stream()
+                .map(roles -> new SimpleGrantedAuthority(roles.getRoleName().name()))
+                .collect(Collectors.toList());
+        return new CustomUserDetails(
              users.getUsersId(),
              users.getUsersName(),
              users.getUsersPassWord(),
@@ -48,9 +52,8 @@ public class CustomUserDetails implements UserDetails {
              users.getUserPhone(), users.getUserCompany(),
              users.getBillingAddress(),
              users.getShippingAdress(),
-             users.getPermission(),
-             users.isUserStatus()
-
+             users.isUserStatus(),
+             listAuthorities
      );
     }
 
@@ -83,4 +86,5 @@ public class CustomUserDetails implements UserDetails {
     public boolean isEnabled() {
         return true;
     }
+
 }

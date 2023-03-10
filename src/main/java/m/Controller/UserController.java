@@ -1,11 +1,12 @@
 package m.Controller;
 
 import m.JWT.JwtTokenProvider;
-import m.Model.DTO.UserDTO;
+import m.PayLoad.Response.UserDTO;
+import m.Model.Entity.ERole;
+import m.Model.Entity.Roles;
 import m.Model.Entity.Users;
+import m.Model.Service.RoleService;
 import m.Model.Service.UserService;
-import m.Model.ServiceImp.UserServiceImp;
-import m.PayLoad.Request.ForgotPassWordRequest;
 import m.PayLoad.Request.LoginRequest;
 import m.PayLoad.Request.ResetPasswordRequest;
 import m.PayLoad.Request.SignupRequest;
@@ -19,6 +20,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -28,10 +30,11 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @CrossOrigin(origins = "*")
 @RestController
-@RequestMapping("/api/m/auth/userController")
+@RequestMapping("/api/m/userController")
 public class UserController {
     @Autowired
     private AuthenticationManager authenticationManager;
@@ -41,6 +44,8 @@ public class UserController {
     private UserService userService;
     @Autowired
     private PasswordEncoder passwordEncoder;
+    @Autowired
+    private RoleService roleService;
 
     @PostMapping("/signup")
     public ResponseEntity<?> registerUser(@RequestBody SignupRequest signupRequest) {
@@ -58,7 +63,26 @@ public class UserController {
         user.setUserCompany(signupRequest.getUserCompany());
         user.setBillingAddress(signupRequest.getBillingAddress());
         user.setShippingAdress(signupRequest.getShippingAdress());
-        user.setPermission(signupRequest.getPermission());
+        Set<String> strRoles = signupRequest.getListRoles();
+        Set<Roles> listRoles = new HashSet<>();
+        if (strRoles == null) {
+            Roles userRole = roleService.findByRoleName(ERole.ROLE_USER).orElseThrow(() -> new RuntimeException("Error: Role is not found"));
+            listRoles.add(userRole);
+        } else {
+            strRoles.forEach(role -> {
+                switch (role) {
+                    case "admin":
+                        Roles adminRole = roleService.findByRoleName(ERole.ROLE_ADMIN)
+                                .orElseThrow(() -> new RuntimeException("Error: Role is not found"));
+                        listRoles.add(adminRole);
+                    case "user":
+                        Roles userRole = roleService.findByRoleName(ERole.ROLE_USER)
+                                .orElseThrow(() -> new RuntimeException("Error: Role is not found"));
+                        listRoles.add(userRole);
+                }
+            });
+        }
+        user.setListRoles(listRoles);
         user.setUserStatus(true);
         userService.saveAndUpdate(user);
         return ResponseEntity.ok(new MessageResponse("User registered successfully"));
@@ -66,37 +90,31 @@ public class UserController {
 
     @PostMapping("/signin")
     public ResponseEntity<?> loginUser(@RequestBody LoginRequest loginRequest) {
-        Users users=userService.findByUsersName(loginRequest.getUsersName());
-        if (users.isUserStatus()){
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(loginRequest.getUsersName(), loginRequest.getUsersPassWord())
-        );
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        CustomUserDetails customUserDetail = (CustomUserDetails) authentication.getPrincipal();
-
+        Users users = userService.findByUsersName(loginRequest.getUsersName());
+        if (users.isUserStatus()) {
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(loginRequest.getUsersName(), loginRequest.getUsersPassWord())
+            );
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+            CustomUserDetails customUserDetail = (CustomUserDetails) authentication.getPrincipal();
             String jwt = jwtTokenProvider.generateToken(customUserDetail);
-
-
+            List<String> listRoles = customUserDetail.getAuthorities().stream()
+                    .map(item -> item.getAuthority()).collect(Collectors.toList());
             return ResponseEntity.ok(new JwtResponse(jwt, customUserDetail.getUsername(), customUserDetail.getUserEmail(),
-                    customUserDetail.getUserPhone(), customUserDetail.getPermission()));
+                    customUserDetail.getUserPhone(), listRoles));
         } else {
-         return ResponseEntity.ok("Tài khoản bạn đã bị vô hiệu hoá");
+            return ResponseEntity.ok("Tài khoản bạn đã bị vô hiệu hoá");
         }
 
 
     }
 
     @GetMapping()
+    @PreAuthorize("hasRole('ADMIN')")
     public List<UserDTO> getAllUser() {
         List<Users> usersList = userService.getAll();
         List<UserDTO> userDTOS = new ArrayList<>();
-        String permission = "";
         for (Users user : usersList) {
-            if (user.getPermission() == 1) {
-                permission = "Quản trị";
-            } else {
-                permission = "Người dùng";
-            }
             UserDTO userDTO = new UserDTO(
                     user.getUsersName(),
                     user.getUserEmail(),
@@ -104,7 +122,6 @@ public class UserController {
                     user.getUserCompany(),
                     user.getBillingAddress(),
                     user.getShippingAdress(),
-                    permission,
                     (user.isUserStatus() ? "Hoạt Động" : "Block")
             );
             userDTOS.add(userDTO);
@@ -113,6 +130,7 @@ public class UserController {
     }
 
     @GetMapping("/logOut")
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     public ResponseEntity<?> logOut(HttpServletRequest request) {
         String authorizationHeader = request.getHeader("Authorization");
 
@@ -123,7 +141,8 @@ public class UserController {
     }
 
 
-    @PostMapping("resetPassWord")
+    @PostMapping("/resetPassWord")
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     public ResponseEntity<?> resetPassword(@RequestBody ResetPasswordRequest resetPasswordRequest) {
         CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         boolean check = passwordEncoder.matches(resetPasswordRequest.getUsersPassWord(), userDetails.getPassword());
@@ -142,48 +161,58 @@ public class UserController {
         }
     }
 
-    @GetMapping("/SearchUserByName")
-    public List<Users> searchUserByName(@RequestParam("usersName") String usersName) {
-        return userService.findByUsersNameContaining(usersName);
+    @GetMapping("/SearchUserBy")
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    public ResponseEntity<?> searchUserByName(@RequestParam("searchBy") String searchBy, @RequestParam("name") String name) {
+        List<Users> usersList=userService.searchBy(searchBy,name);
+        List<UserDTO> userDTOS = new ArrayList<>();
+        for (Users user : usersList) {
+            UserDTO userDTO = new UserDTO(
+                    user.getUsersName(),
+                    user.getUserEmail(),
+                    user.getUserPhone(),
+                    user.getUserCompany(),
+                    user.getBillingAddress(),
+                    user.getShippingAdress(),
+                    (user.isUserStatus() ? "Hoạt Động" : "Block")
+            );
+            userDTOS.add(userDTO);
+        }
+        return ResponseEntity.ok(userDTOS);
     }
 
-    @GetMapping("/SearchUserByEmail")
-    public List<Users> searchUserByEmail(@RequestParam("email") String email) {
-        return userService.findByUserEmailContaining(email);
-    }
-
-    @GetMapping("/SearchUserByShipping")
-    public List<Users> searchUserByShipping(@RequestParam("shipping") String shipping) {
-        return userService.findByShippingAdressContaining(shipping);
-    }
-
-    @GetMapping("/SearchUserByCompany")
-    public List<Users> searchUserByCompany(@RequestParam("company") String company) {
-        return userService.findByUserCompanyContaining(company);
-    }
 
     @GetMapping("/sortUserByName")
-    public List<Users> sortUserByName(@RequestParam("diraction") String diraction) {
-        return userService.sortUserByUserName(diraction);
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    public ResponseEntity<?> sortUserByName(@RequestParam("diraction") String diraction) {
+        List<Users> usersList=userService.sortUserByUserName(diraction);
+        List<UserDTO> userDTOS = new ArrayList<>();
+        for (Users user : usersList) {
+            UserDTO userDTO = new UserDTO(
+                    user.getUsersName(),
+                    user.getUserEmail(),
+                    user.getUserPhone(),
+                    user.getUserCompany(),
+                    user.getBillingAddress(),
+                    user.getShippingAdress(),
+                    (user.isUserStatus() ? "Hoạt Động" : "Block")
+            );
+            userDTOS.add(userDTO);
+        }
+        return ResponseEntity.ok(userDTOS);
     }
 
-    @GetMapping("/paginationUserAsc")
+    @GetMapping("/paginationUser")
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     public ResponseEntity<Map<String, Object>> paggingUser(@RequestParam(defaultValue = "0") int page,
-                                                           @RequestParam(defaultValue = "3") int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by("usersName").ascending());
-        Page<Users> users = userService.paggingUser(pageable);
-        Map<String, Object> data = new HashMap<>();
-        data.put("Users", users.getContent());
-        data.put("Size", users.getSize());
-        data.put("TotalElement", users.getTotalElements());
-        data.put("TotalPage", users.getTotalPages());
-        return new ResponseEntity<>(data, HttpStatus.OK);
-    }
-
-    @GetMapping("/paginationUsedesc")
-    public ResponseEntity<Map<String, Object>> paggingUserDsec(@RequestParam(defaultValue = "0") int page,
-                                                               @RequestParam(defaultValue = "3") int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by("usersName").descending());
+                                                           @RequestParam(defaultValue = "3") int size,
+                                                           @RequestParam("paginationBy") String paginationBy) {
+        Pageable pageable;
+        if (paginationBy.equalsIgnoreCase("asc")) {
+            pageable = PageRequest.of(page, size, Sort.by("usersName").ascending());
+        } else {
+            pageable = PageRequest.of(page, size, Sort.by("usersName").descending());
+        }
         Page<Users> users = userService.paggingUser(pageable);
         Map<String, Object> data = new HashMap<>();
         data.put("Users", users.getContent());
@@ -194,45 +223,43 @@ public class UserController {
     }
 
     @GetMapping("/changeAccess")
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     public ResponseEntity<?> changeAccountPermissions(@RequestParam("usersName") String usersName) {
         CustomUserDetails usersChangePass = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        if (usersChangePass!=null){
-            if (usersChangePass.getPermission()==1){
-                Users users = userService.findByUsersName(usersName);
-                users.setUserStatus(!users.isUserStatus());
-                userService.saveAndUpdate(users);
+        if (usersChangePass != null) {
+            Users users = userService.findByUsersName(usersChangePass.getUsersName());
+            if (users.getListRoles().size() != 2) {
+                Users usersChange = userService.findByUsersName(usersName);
+                usersChange.setUserStatus(!usersChange.isUserStatus());
+                userService.saveAndUpdate(usersChange);
                 return ResponseEntity.ok("Cập nhật quyền thành công!");
-            }else {
-                return ResponseEntity.ok("Bạn không có quyền thực hiện thao tác này!");
+            } else {
+                return ResponseEntity.ok("Bạn không thể cập nhật quyền cho user này!");
             }
-        }else {
+        } else {
             return ResponseEntity.ok("Bạn cần thực hiện đăng nhập trước khi thực hiện thao tác này!");
         }
     }
 
-   @GetMapping("/filter")
-    public ResponseEntity<?> filter(@RequestParam("filterBy")String filterName,@RequestParam("name")String name){
-        List<Users> listUser = userService.filter(filterName,name);
-       List<UserDTO> userDTOS = new ArrayList<>();
-
-       for (Users user : listUser) {
-
-           UserDTO userDTO = new UserDTO(
-                   user.getUsersName(),
-                   user.getUserEmail(),
-                   user.getUserPhone(),
-                   user.getUserCompany(),
-                   user.getBillingAddress(),
-                   user.getShippingAdress(),
-                   ((user.getPermission()==1)?"Quản trị":"Người dùng"),
-                   (user.isUserStatus() ? "Hoạt Động" : "Block")
-           );
-           userDTOS.add(userDTO);
-       }
-
+    @GetMapping("/filter")
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    public ResponseEntity<?> filter(@RequestParam("filterBy") String filterName, @RequestParam("name") String name) {
+        List<Users> listUser = userService.filter(filterName, name);
+        List<UserDTO> userDTOS = new ArrayList<>();
+        for (Users user : listUser) {
+            UserDTO userDTO = new UserDTO(
+                    user.getUsersName(),
+                    user.getUserEmail(),
+                    user.getUserPhone(),
+                    user.getUserCompany(),
+                    user.getBillingAddress(),
+                    user.getShippingAdress(),
+                    (user.isUserStatus() ? "Hoạt Động" : "Block")
+            );
+            userDTOS.add(userDTO);
+        }
         return ResponseEntity.ok(userDTOS);
-   }
-
+    }
 
 
 }

@@ -55,24 +55,20 @@ public class UserServiceImp implements UserService<Users,Integer> {
     }
 
     @Override
-    public List<Users> findByUsersNameContaining(String usersName) {
-        return userResponsitory.findByUsersNameContaining(usersName);
+    public List<Users> searchBy(String searchBy, String name) {
+        if (searchBy.equalsIgnoreCase("name")){
+            return userResponsitory.findByUsersNameContaining(name);
+        } else if (searchBy.equalsIgnoreCase("email")) {
+            return userResponsitory.findByUserEmailContaining(name);
+        } else if (searchBy.equalsIgnoreCase("shipping")) {
+            return userResponsitory.findByShippingAdressContaining(name);
+        }else {
+            return userResponsitory.findByUserCompanyContaining(name);
+        }
+
     }
 
-    @Override
-    public List<Users> findByUserEmailContaining(String email) {
-        return userResponsitory.findByUserEmailContaining(email);
-    }
 
-    @Override
-    public List<Users> findByShippingAdressContaining(String shipping) {
-        return userResponsitory.findByShippingAdressContaining(shipping);
-    }
-
-    @Override
-    public List<Users> findByUserCompanyContaining(String company) {
-        return userResponsitory.findByUserCompanyContaining(company);
-    }
 
     @Override
     public List<Users> sortUserByUserName(String diraction) {
@@ -90,15 +86,12 @@ public class UserServiceImp implements UserService<Users,Integer> {
 
     @Override
         public List<Users> filter(String filter,String name) {
-        List<Users> list = new ArrayList<>();
             if (filter.equalsIgnoreCase("company")){
-                list = userResponsitory.findByUserCompany(name);
+                return userResponsitory.findByUserCompany(name);
             } else if (filter.equalsIgnoreCase("billAddress")) {
-                list = userResponsitory.findByBillingAddress(name);
+                return userResponsitory.findByBillingAddress(name);
             }else {
-                list = userResponsitory.findByShippingAdress(name);
+                return userResponsitory.findByShippingAdress(name);
             }
-
-        return list;
     }
 }
