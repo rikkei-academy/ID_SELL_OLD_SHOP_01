@@ -1,7 +1,12 @@
 package m.PayLoad.Request;
 
-import javax.persistence.Column;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 
+import javax.persistence.Column;
+import java.util.Set;
+@Data
+@AllArgsConstructor
 public class SignupRequest {
     private String usersName;
 
@@ -17,91 +22,9 @@ public class SignupRequest {
 
     private String shippingAdress;
 
-    private int permission;
+    private String permission;
 
     private boolean userStatus;
+    private Set<String> listRoles;
 
-    public SignupRequest(String usersName, String usersPassWord, String userEmail, String userPhone, String userCompany, String billingAddress, String shippingAdress, int permission, boolean userStatus) {
-        this.usersName = usersName;
-        this.usersPassWord = usersPassWord;
-        this.userEmail = userEmail;
-        this.userPhone = userPhone;
-        this.userCompany = userCompany;
-        this.billingAddress = billingAddress;
-        this.shippingAdress = shippingAdress;
-        this.permission = permission;
-        this.userStatus = userStatus;
-    }
-
-    public String getUsersName() {
-        return usersName;
-    }
-
-    public void setUsersName(String usersName) {
-        this.usersName = usersName;
-    }
-
-    public String getUsersPassWord() {
-        return usersPassWord;
-    }
-
-    public void setUsersPassWord(String usersPassWord) {
-        this.usersPassWord = usersPassWord;
-    }
-
-    public String getUserEmail() {
-        return userEmail;
-    }
-
-    public void setUserEmail(String userEmail) {
-        this.userEmail = userEmail;
-    }
-
-    public String getUserPhone() {
-        return userPhone;
-    }
-
-    public void setUserPhone(String userPhone) {
-        this.userPhone = userPhone;
-    }
-
-    public String getUserCompany() {
-        return userCompany;
-    }
-
-    public void setUserCompany(String userCompany) {
-        this.userCompany = userCompany;
-    }
-
-    public String getBillingAddress() {
-        return billingAddress;
-    }
-
-    public void setBillingAddress(String billingAddress) {
-        this.billingAddress = billingAddress;
-    }
-
-    public String getShippingAdress() {
-        return shippingAdress;
-    }
-
-    public void setShippingAdress(String shippingAdress) {
-        this.shippingAdress = shippingAdress;
-    }
-
-    public int getPermission() {
-        return permission;
-    }
-
-    public void setPermission(int permission) {
-        this.permission = permission;
-    }
-
-    public boolean isUserStatus() {
-        return userStatus;
-    }
-
-    public void setUserStatus(boolean userStatus) {
-        this.userStatus = userStatus;
-    }
 }

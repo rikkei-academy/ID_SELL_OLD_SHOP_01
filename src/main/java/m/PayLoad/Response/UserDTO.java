@@ -1,4 +1,4 @@
-package m.Model.DTO;
+package m.PayLoad.Response;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -20,6 +20,6 @@ public class UserDTO {
 
     private String shippingAdress;
 
-    private String permission;
+
     private String status;
 }

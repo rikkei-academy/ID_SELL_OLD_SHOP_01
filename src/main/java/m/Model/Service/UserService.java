@@ -15,11 +15,7 @@ public interface UserService<T,V> {
     List<T> getAll();
     T saveAndUpdate(T t);
     T findById(V id);
-
-    List<Users> findByUsersNameContaining(String usersName);
-    List<Users> findByUserEmailContaining(String email);
-    List<Users> findByShippingAdressContaining(String shipping);
-    List<Users> findByUserCompanyContaining(String company);
+    List<Users> searchBy(String searchBy,String name);
     List<Users> sortUserByUserName(String diraction);
     Page<Users> paggingUser(Pageable pageable);
 

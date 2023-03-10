@@ -6,6 +6,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "users")
@@ -32,8 +34,10 @@ public class Users {
     private String billingAddress;
     @Column(name = "shippingAdress")
     private String shippingAdress;
-    @Column(name = "permission")
-    private int permission;
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(name = "User_Role", joinColumns = @JoinColumn(name = "UserId"),
+            inverseJoinColumns = @JoinColumn(name = "RoleId"))
+    private Set<Roles> listRoles = new HashSet<>();
     @Column(name = "userStatus")
     private boolean userStatus;
 

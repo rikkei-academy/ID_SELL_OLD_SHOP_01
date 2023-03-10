@@ -1,6 +1,7 @@
 package m.PayLoad.Response;
 
 import javax.persistence.Column;
+import java.util.List;
 
 public class JwtResponse {
     private String token;
@@ -8,17 +9,17 @@ public class JwtResponse {
     private String usersName;
     private String userEmail;
     private String userPhone;
-    private int permission;
+    private List<String> listRoles;
 
-    public JwtResponse(String token, String usersName, String userEmail, String userPhone, int permission) {
+
+
+    public JwtResponse(String token, String usersName, String userEmail, String userPhone, List<String> listRoles) {
         this.token = token;
         this.usersName = usersName;
         this.userEmail = userEmail;
         this.userPhone = userPhone;
-        this.permission = permission;
+        this.listRoles = listRoles;
     }
-
-
 
     public String getToken() {
         return token;
@@ -60,11 +61,11 @@ public class JwtResponse {
         this.userPhone = userPhone;
     }
 
-    public int getPermission() {
-        return permission;
+    public List<String> getListRoles() {
+        return listRoles;
     }
 
-    public void setPermission(int permission) {
-        this.permission = permission;
+    public void setListRoles(List<String> listRoles) {
+        this.listRoles = listRoles;
     }
 }
