@@ -9,6 +9,7 @@ import java.util.List;
 public interface CatalogService {
     List<Catalog> findAllCatalog();
     Catalog saveAndUpdate(Catalog catalog);
+    List<Catalog> getAllCatalogStatusTrue();
     void delete(int id);
     Catalog getById(int id);
     List<Catalog> searchCatalogByCatalogName(String name);

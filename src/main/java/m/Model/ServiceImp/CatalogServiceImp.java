@@ -25,6 +25,11 @@ public class CatalogServiceImp implements CatalogService {
     }
 
     @Override
+    public List<Catalog> getAllCatalogStatusTrue() {
+        return catalogResponsitory.getAllCatalogStatusTrue();
+    }
+
+    @Override
     public void delete(int id) {
         catalogResponsitory.deleteById(id);
     }
