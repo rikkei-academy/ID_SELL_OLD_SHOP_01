@@ -5,18 +5,18 @@ import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
-public interface ProductService<T, V> {
-    List<T> findAllProduct();
-    List<T> findAllProductTrue();
+public interface ProductDetailsService<T,V>{
+    List<T> findAllProductDetails();
+    List<T> findAllProductDetailsTrue();
     T saveAndUpdate(T t);
 
     void delete(V id);
 
     T getById(V id);
 
-    List<T> searchProductByProductName(String name);
+    List<T> searchProductDetailsBy(String searchBy,String name);
 
-    List<T> sortProductByProductName(String direction,String sortBy);
+    List<T> sortProductDetailsBy(String direction,String sortBy);
 
     Page<T> getPagging(Pageable pageable);
 }
