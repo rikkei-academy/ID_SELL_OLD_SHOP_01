@@ -14,7 +14,7 @@ public interface ProductDetailsService<T,V>{
 
     T getById(V id);
 
-    List<T> searchProductDetailsBy(String searchBy,String name);
+//    List<T> searchProductDetailsBy(String searchBy,String name);
 
     List<T> sortProductDetailsBy(String direction,String sortBy);
 

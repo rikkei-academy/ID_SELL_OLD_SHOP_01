@@ -41,17 +41,17 @@ public class ProductDetailsServiceImp implements ProductDetailsService<ProductDe
         return productDetailsResponsitory.findById(id).get();
     }
 
-    @Override
-    public List<ProductDetails> searchProductDetailsBy(String searchBy, String name) {
-        if (searchBy.equalsIgnoreCase("productname")) {
-            return productDetailsResponsitory.getProductDetailsByProductName(name);
-        } else if (searchBy.equalsIgnoreCase("colorname")) {
-            return productDetailsResponsitory.getProductDetailsByProductName(name);
-        } else {
-            return null;
-        }
-
-    }
+//    @Override
+//    public List<ProductDetails> searchProductDetailsBy(String searchBy, String name) {
+//        if (searchBy.equalsIgnoreCase("productname")) {
+//            return productDetailsResponsitory.getProductDetailsByProductName(name);
+//        } else if (searchBy.equalsIgnoreCase("colorname")) {
+//            return productDetailsResponsitory.getProductDetailsByProductName(name);
+//        } else {
+//            return null;
+//        }
+//
+//    }
 
     @Override
     public List<ProductDetails> sortProductDetailsBy(String direction, String sortBy) {

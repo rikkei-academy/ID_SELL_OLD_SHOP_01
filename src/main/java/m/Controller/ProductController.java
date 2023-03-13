@@ -187,10 +187,10 @@ public class ProductController {
         return ResponseEntity.ok("Lock product successfully!");
     }
 
-    @GetMapping("/searchProduct")
-    private List<Product> searchProduct(@RequestParam("name") String name) {
-        return productService.searchProductByProductName(name);
-    }
+//    @GetMapping("/searchProduct")
+//    private List<Product> searchProduct(@RequestParam("name") String name) {
+//        return productService.searchProductByProductName(name);
+//    }
 
     @GetMapping("/sortProductByName")
     private List<Product> sortProductByName(@RequestParam("direction") String direction,@RequestParam("sortBy") String sortBy) {
