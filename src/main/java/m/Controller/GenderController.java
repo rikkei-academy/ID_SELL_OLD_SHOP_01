@@ -26,23 +26,25 @@ public class GenderController {
     private List<Gender> getAllColor() {
         return genderService.findAllGender();
     }
-//
-//    @GetMapping()
-//    private List<Gender> getAllColorTrue() {
-//        return colorService.getAllColorStatusTrue();
-//    }
-//
-//    @PostMapping()
-//    private Gender createGender(@RequestBody Gender gender) {
-//        color.setColorStatus(true);
-//        return colorService.saveAndUpdate(color);
-//    }
-//
-//    @PutMapping("/{genderId}")
-//    private Gender updateGender(@RequestBody Gender gender, @PathVariable("genderId") int genderId) {
-//       Gender
-//        return colorService.saveAndUpdate(colorUpdate);
-//    }
+
+    @GetMapping()
+    private List<Gender> getAllColorTrue() {
+        return genderService.getAllGenderStatusTrue();
+    }
+
+    @PostMapping()
+    private Gender createGender(@RequestBody Gender gender) {
+        gender.setGenderStatus(true);
+        return genderService.saveAndUpdate(gender);
+    }
+
+    @PutMapping("/{genderId}")
+    private Gender updateGender(@RequestBody Gender gender, @PathVariable("genderId") int genderId) {
+       Gender genderOld=genderService.getById(genderId);
+       genderOld.setGenderName(gender.getGenderName());
+       genderOld.setGenderStatus(gender.isGenderStatus());
+        return genderService.saveAndUpdate(genderOld);
+    }
 
     @GetMapping("lockGender/{genderId}")
     private ResponseEntity<?> lockGender(@PathVariable("genderId") int genderId) {
