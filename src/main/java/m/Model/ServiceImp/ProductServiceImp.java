@@ -21,6 +21,11 @@ public class ProductServiceImp implements ProductService<Product,Integer> {
     }
 
     @Override
+    public List<Product> findAllProductTrue() {
+        return productResponsitory.getAllByProductTrue();
+    }
+
+    @Override
     public Product saveAndUpdate(Product product) {
         return productResponsitory.save(product);
     }
