@@ -1,11 +1,14 @@
 package m.Model.Entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "carts")
@@ -21,6 +24,9 @@ public class Carts {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "usersId")
     private Users users;
+    @OneToMany(mappedBy = "carts",cascade = CascadeType.ALL)
+    @JsonIgnore
+    private List<CartDetails > cartDetailsList=new ArrayList<>();
     @Column(name = "subtotal")
     private double subtotal;
     @Column(name = "email")
@@ -30,7 +36,7 @@ public class Carts {
     @Column(name = "lastName")
     private String lastName;
     @Column(name = "phone")
-    private int phone;
+    private String phone;
     @Column(name = "companyName")
     private String companyName;
     @Column(name = "country")
@@ -38,7 +44,7 @@ public class Carts {
     @Column(name = "zipCode")
     private String zipCode;
     @Column(name = "houseNumber")
-    private int houseNumber;
+    private String houseNumber;
     @Column(name = "apartment")
     private String apartment;
     @Column(name = "streetName")

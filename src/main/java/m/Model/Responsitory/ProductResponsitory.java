@@ -12,4 +12,6 @@ public interface ProductResponsitory extends JpaRepository<Product,Integer> {
     List<Product> findByProductNameContaining(String name);
     @Query(value = "from Product p where p.productStatus<4")
     List<Product> getAllByProductTrue();
+
+
 }

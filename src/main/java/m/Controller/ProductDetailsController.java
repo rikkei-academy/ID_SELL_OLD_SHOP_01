@@ -167,11 +167,6 @@ public class ProductDetailsController {
         return ResponseEntity.ok("Lock product details successfully!");
     }
 
-//    @GetMapping("/searchProductDetails")
-//    private List<ProductDetails> searchProductDetails(@RequestParam("name") String name,@RequestParam("searchBy") String searchBy) {
-//        return productDetailsService.searchProductDetailsBy(searchBy,name);
-//    }
-
     @GetMapping("/sortProductDetailsBy")
     private List<ProductDetails> sortProductDetailsByName(@RequestParam("direction") String direction,@RequestParam("sortBy") String sortBy) {
         return productDetailsService.sortProductDetailsBy(direction,sortBy);
