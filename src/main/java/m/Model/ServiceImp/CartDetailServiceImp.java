@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
-public class CartDetailServiceImp implements CartDetailService<CartDetails, Integer> {
+public class CartDetailServiceImp implements CartDetailService<CartDetails,Integer> {
     @Autowired
     private CartDetailRepository cartDetailRepository;
     @Override

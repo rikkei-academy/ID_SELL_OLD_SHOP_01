@@ -24,9 +24,10 @@ public class CartServiceImp implements CartService<Carts,Integer> {
     }
 
     @Override
-    public List<Carts> getAllCartStatusTrue() {
-        return null;
+    public List<Carts> getCartInShoppingCart() {
+        return cartRepository.findByState0();
     }
+
 
     @Override
     public void delete(int id) {
@@ -49,7 +50,22 @@ public class CartServiceImp implements CartService<Carts,Integer> {
     }
 
     @Override
+    public List<Carts> searchStateBy(String name) {
+        if (name.equalsIgnoreCase("đợi")){
+            return cartRepository.findByState1();
+        } else if (name.equalsIgnoreCase("chuẩn bị")) {
+            return cartRepository.findByState2();
+        }else if (name.equalsIgnoreCase("giao")) {
+            return cartRepository.findByState3();
+        }else if (name.equalsIgnoreCase("thành công")) {
+            return cartRepository.findByState4();
+        }else {
+            return cartRepository.findByState();
+        }
+    }
+
+    @Override
     public Carts findByUsers_UsersIdAndState(int id, int state) {
-        return cartRepository.findByUsers_UsersIdAndState(id,state);
+        return cartRepository.getCartByUserandState(id,state);
     }
 }
