@@ -28,4 +28,5 @@ public class CartDetails {
     private double cartDetailsPrice;
     @Column(name = "cartDetailsQuantity")
     private int cartDetailsQuantity;
+
 }
